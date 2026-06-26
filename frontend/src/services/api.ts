@@ -49,7 +49,9 @@ const http = axios.create({
 
 http.interceptors.request.use((config) => {
   const token = getAuthToken()
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  if (token) {
+    config.headers.set('Authorization', `Bearer ${token}`)
+  }
   return config
 })
 
@@ -57,7 +59,14 @@ http.interceptors.response.use(
   (response) => response,
   (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-      clearAuthToken()
+      const url = error.config?.url ?? ''
+      const isAuthRoute =
+        url.includes('/auth/login') ||
+        url.includes('/auth/register') ||
+        url.includes('/auth/forgot-password')
+      if (!isAuthRoute) {
+        clearAuthToken()
+      }
     }
     return Promise.reject(error)
   }

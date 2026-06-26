@@ -74,17 +74,13 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
       </p>
 
       <Input
-        label="Email"
-        type="email"
+        label="Email or username"
+        type="text"
         placeholder="you@example.com"
-        autoComplete="email"
+        autoComplete="username"
         icon={<Mail className="h-4 w-4" />}
         {...register('email', {
-          required: 'Email is required',
-          pattern: {
-            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-            message: 'Enter a valid email address',
-          },
+          required: 'Email or username is required',
         })}
         error={errors.email?.message}
       />

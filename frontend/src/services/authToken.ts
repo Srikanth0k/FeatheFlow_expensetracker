@@ -1,29 +1,39 @@
 const TOKEN_KEY = 'finflow_auth_token'
 const LEGACY_TOKEN_KEY = 'auth_token'
 
-/** Read token from sessionStorage (migrates legacy localStorage token once). */
+/** Read token from localStorage (survives browser restarts). */
 export function getAuthToken(): string | null {
-  const sessionToken = sessionStorage.getItem(TOKEN_KEY)
-  if (sessionToken) return sessionToken
+  const token = localStorage.getItem(TOKEN_KEY)
+  if (token) return token
 
   const legacyToken = localStorage.getItem(LEGACY_TOKEN_KEY)
   if (legacyToken) {
-    sessionStorage.setItem(TOKEN_KEY, legacyToken)
+    localStorage.setItem(TOKEN_KEY, legacyToken)
     localStorage.removeItem(LEGACY_TOKEN_KEY)
     return legacyToken
+  }
+
+  // One-time migration from sessionStorage
+  const sessionToken = sessionStorage.getItem(TOKEN_KEY)
+  if (sessionToken) {
+    localStorage.setItem(TOKEN_KEY, sessionToken)
+    sessionStorage.removeItem(TOKEN_KEY)
+    return sessionToken
   }
 
   return null
 }
 
 export function setAuthToken(token: string): void {
-  sessionStorage.setItem(TOKEN_KEY, token)
+  localStorage.setItem(TOKEN_KEY, token)
   localStorage.removeItem(LEGACY_TOKEN_KEY)
+  sessionStorage.removeItem(TOKEN_KEY)
 }
 
 export function clearAuthToken(): void {
-  sessionStorage.removeItem(TOKEN_KEY)
+  localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(LEGACY_TOKEN_KEY)
+  sessionStorage.removeItem(TOKEN_KEY)
 }
 
 export function hasAuthToken(): boolean {

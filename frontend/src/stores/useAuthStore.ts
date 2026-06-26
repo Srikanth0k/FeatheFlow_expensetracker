@@ -3,7 +3,6 @@ import { persist } from 'zustand/middleware'
 import axios from 'axios'
 import { Auth, type AuthUserResponse } from '../services/api'
 import { getAuthToken, setAuthToken, clearAuthToken, captureTokenFromUrl, hasAuthToken } from '../services/authToken'
-import { environment } from '../config/environment'
 import { useSettingsStore } from './useSettingsStore'
 import { useFinanceStore } from './useFinanceStore'
 
@@ -52,7 +51,7 @@ function applyUserSession(user: AuthUser, token: string) {
 }
 
 async function loadInitialData() {
-  if (hasAuthToken() || !environment.useLocalStorage) {
+  if (hasAuthToken()) {
     await useFinanceStore.getState().fetchTransactions()
   }
 }
@@ -166,6 +165,12 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.isAuthenticated && !hasAuthToken()) {
+          state.isAuthenticated = false
+          state.user = null
+        }
+      },
     }
   )
 )

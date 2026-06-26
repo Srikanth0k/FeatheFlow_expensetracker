@@ -52,9 +52,9 @@ const defaultFilters: FilterState = {
   sortOrder: 'desc',
 }
 
-/** Use backend API when logged in or when local storage mode is disabled. */
+/** Use backend API only when a login token is present. */
 function shouldUseApi(): boolean {
-  return hasAuthToken() || !environment.useLocalStorage
+  return hasAuthToken()
 }
 
 let fetchPromise: Promise<void> | null = null
