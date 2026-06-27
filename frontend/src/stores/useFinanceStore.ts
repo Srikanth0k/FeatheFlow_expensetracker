@@ -1,10 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Income, Expense, FilterState, ChatMessage } from '../types'
-import { generateId, getToday, getCurrentMonthRange } from '../utils/format'
+import { generateId, getCurrentMonthRange } from '../utils/format'
 import { Income as IncomeApi, Expense as ExpenseApi } from '../services/api'
 import { hasAuthToken } from '../services/authToken'
-import { environment } from '../config/environment'
 
 interface FinanceState {
   incomes: Income[]
@@ -81,6 +80,8 @@ export const useFinanceStore = create<FinanceState>()(
               ExpenseApi.getExpenses(),
             ])
             set({ incomes, expenses })
+          } catch {
+            // Leave existing transactions visible if the sync request fails.
           } finally {
             set({ isLoading: false })
             fetchPromise = null
