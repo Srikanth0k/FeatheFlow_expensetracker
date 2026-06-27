@@ -51,14 +51,17 @@ function applyUserSession(user: AuthUser, token: string) {
 }
 
 async function loadInitialData() {
-  if (hasAuthToken()) {
+  if (!hasAuthToken()) return
+  try {
     await useFinanceStore.getState().fetchTransactions()
+  } catch {
+    // Auth should succeed even if transaction sync fails.
   }
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
       isBootstrapping: true,
@@ -84,9 +87,9 @@ export const useAuthStore = create<AuthState>()(
             const { data } = await Auth.me()
             const user = toAuthUser(data)
             useSettingsStore.getState().updateSettings({ userName: user.name })
-            await loadInitialData()
             sessionReady = true
             set({ user, isAuthenticated: true, isBootstrapping: false })
+            void loadInitialData()
           } catch {
             clearAuthToken()
             set({ user: null, isAuthenticated: false, isBootstrapping: false })
@@ -102,8 +105,8 @@ export const useAuthStore = create<AuthState>()(
           const user = toAuthUser(data.user)
           applyUserSession(user, data.access_token)
           sessionReady = true
-          await loadInitialData()
-          set({ user, isAuthenticated: true, isBootstrapping: false })
+          set({ user, isAuthenticated: true, isBootstrapping: false, entryTab: 'expenses' })
+          void loadInitialData()
         } catch (err) {
           throw new Error(getErrorMessage(err, 'Login failed'))
         }
@@ -126,8 +129,8 @@ export const useAuthStore = create<AuthState>()(
           const user = toAuthUser(data.user)
           applyUserSession(user, data.access_token)
           sessionReady = true
-          await loadInitialData()
-          set({ user, isAuthenticated: true, isBootstrapping: false })
+          set({ user, isAuthenticated: true, isBootstrapping: false, entryTab: 'expenses' })
+          void loadInitialData()
         } catch (err) {
           throw new Error(getErrorMessage(err, 'Could not create account'))
         }
